@@ -31,17 +31,26 @@ int main(){
   //signal(SIGUSR2, p);
 
   if (i != 0){ //Productor
-    while (*currentIndex < size){
-      buffer[*currentIndex] = 1;
-      *currentIndex+= 1;
+    while (1){
+      if (*currentIndex < size){
+        buffer[*currentIndex] = 1;
+        *currentIndex+= 1;
+        printf("Produced an item in position %d\n",*currentIndex );
+      }else{
+        sleep(1);
+      }
     }
-    printf("%d\n",buffer[3] );
 
   }else{ //Consumidor
-    while(*currentIndex == 0){
-      wait(NULL);
+    while (1){
+      if (*currentIndex == 0){
+        sleep(1);
+      }else{
+        buffer[*currentIndex] = 0;
+        *currentIndex-= 1;
+        printf("Consumed an item in position %d\n",*currentIndex );
+      }
     }
-    printf("%d\n",*currentIndex );
 
   }
 
