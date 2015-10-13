@@ -5,15 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 
 
 int main(){
-  int i, sock;
+  int i, n,sock;
   struct sockaddr_in addr_send;
   char *server_ip ="192.168.0.106";
-  unsigned short server_port = 63000;
-  char buffer[1024];
+  unsigned short server_port = 60000;
+  char buffer[256];
   //Create the socket
   sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (sock < 0){
@@ -29,9 +30,34 @@ int main(){
   if ( i < 0){
     printf("Failed\n" );
   }
+  while (1){
+    printf("Please enter the message: ");
+    bzero(buffer,256);
+    fgets(buffer,255,stdin);
 
-  strcpy(buffer, "Hello world");
-  send(sock,buffer,strlen(buffer),0);
+    /* Send message to the server */
+    n = write(sock, buffer, strlen(buffer));
+
+    if (n < 0)
+    {
+       perror("ERROR writing to socket");
+       exit(1);
+    }
+
+    /* Now read server response */
+    bzero(buffer,256);
+    n = read(sock, buffer, 255);
+
+    if (n < 0)
+    {
+       perror("ERROR reading from socket");
+       exit(1);
+    }
+    printf("%s\n",buffer);
+
+  }
+
+
   return 0;
 
 }
