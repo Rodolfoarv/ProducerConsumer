@@ -1,0 +1,74 @@
+= Problema del productor-consumidor o Bounded Buffer
+:author:    Rodolfo Andrés Ramírez Valenzuela (A01169701)
+:email:     rodolfo@ramirezvalenzuela.com
+:encoding:  utf-8
+:revdate:   20 Oct, 2015.
+:numbered:
+
+Este reporte de laboratorio fue elaborado para el curso de _Programación Avanzada_
+en el Tecnológico de Monterrey, Campus Estado de
+México.
+
+== Introducción
+
+El problema del productor-consumidor es un ejemplo clásico de problema de sincronización de multi-procesos.
+El programa describe dos procesos, productor y consumidor, ambos comparten un buffer de tamaño finito.
+La tarea del productor es generar un producto, almacenarlo y comenzar nuevamente;
+mientras que el consumidor toma (simultáneamente) productos uno a uno. El problema
+consiste en que el productor no añada más productos que la capacidad del buffer y
+que el consumidor no intente tomar un producto si el buffer está vacío.
+
+Dentro de este reporte, se muestra la implementación del problema productor-consumidor
+con la finalidad de demostrar la sincronización entre procesos.
+
+== Procedimiento
+
+A continuación se muestra la implementación de dicho algoritmo y se explican las diferentes variables
+que fueron utilizadas, además de su uso.
+
+[source,c]
+--------------------------------------------------------------------------------
+include::producer_consumer.c[]
+--------------------------------------------------------------------------------
+
+=== Variables:
+
+*currentIndex:* Variable que será utilizada con la finalidad de tener la posición
+del elemento que se desea consumir en ese momento. Es importante denotar que dentro de este programa
+se utilizó mmap, con la finalidad de utilizar memoria compartida entre los hijos y el padre, esto con la finalidad
+de comunicar el valor de dicha variable en todo momento.
+
+*randomProducer:* Variable de tipo random que será utilizada para distribuir el trabajo
+entre los diferentes productores.
+
+*randomConsumer:* Variable de tipo random que será utilizada para distribuir el trabajo
+entre los diferentes consumidores.
+
+*parentID:* Variable que será utilizada con la finalidad de poder diferenciar el padre, los consumidores y los productores.
+
+=== Métodos:
+
+*producers:* Método que se encarga de la creación y administración de los productores.
+
+*consumers:* Método que se encarga de la creación y administración de los consumidores.
+
+*main:* Método principal de la aplicación en el se ejecutará el código de los productores y consumidores
+además de la inicialización de las variables previamente mencionadas y la comunicación entre los procesos.
+
+
+== Pruebas
+A continuación se muestra la prueba ejecutada desde la terminal. Para poder correr el programa
+se debe de utilizar los siguientes comandos:
+
+* *gcc producer_consumer.c -o output*
+* *./output*
+
+image:./testImages/producer_consumer_1.jpg[]
+
+== Conclusión
+
+Dentro de esta práctica se aplicaron los conceptos de comunicación entre procesos
+además de memoria compartida, con la finalidad de mostrar el problema de productor-consumidor,
+es importante denotar que la aplicación de forks() no es ideal para dicho problema ya que
+pueden surgir diferentes problemas como es el Mutual Exclusion entre otros, por lo cual hay que tener
+gran cuidado sobre ello. Para una futura implementación es muy recomendado el uso de semáforos.

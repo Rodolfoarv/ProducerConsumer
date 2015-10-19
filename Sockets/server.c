@@ -58,7 +58,7 @@ int main(){
     //This means that the connection has been established and we're able to communicate
 
     //Create the children
-    int producers[2];
+    int producers[10];
     int numberOfProducers;
     for (numberOfProducers = 0; numberOfProducers < 10; numberOfProducers++){
       producers[numberOfProducers] = fork();

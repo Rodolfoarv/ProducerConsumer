@@ -49,7 +49,7 @@ int main(){
   }
   //Create the consumers
 
-  int consumers[2];
+  int consumers[10];
   int numberOfConsumers;
   for (numberOfConsumers = 0; numberOfConsumers < 10; numberOfConsumers++){
     consumers[numberOfConsumers] = fork();

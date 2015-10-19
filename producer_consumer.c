@@ -5,61 +5,100 @@
 #include <signal.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
-static int *currentIndex;
-int *buffer;
-int size;
+#include <time.h>
 
 
-/*
-typedef struct buffer{
-  int size;
-  int array[30];
-} Buffer;
-*/
+static int *currentIndex; // variable shared between all forks
+static int *randomProducer; //variable that will distribute the work among the producers
+static int *randomConsumer; //variable that will distribute the work among the consumers
+int parentID; // variable that will be summed to get the current child
+void producers(); //method that will create and handle the producers
+void consumers(); //method that will create and handle the consumers
 
 int main(){
-  size = 30;
   currentIndex = mmap(NULL, sizeof *currentIndex, PROT_READ | PROT_WRITE,
                      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   *currentIndex = 0;
-  buffer = mmap(NULL, size*sizeof(int),PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED,-1, 0);
 
-  //void itemIsReady(int);
-  //signal(SIGUSR1, itemIsReady);
+  randomProducer = mmap(NULL, sizeof *randomProducer, PROT_READ | PROT_WRITE,
+                     MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  srand(time(NULL));
+  *randomProducer = rand() % 4;
 
-  int i = fork();
-  //signal(SIGUSR2, p);
+  randomConsumer = mmap(NULL, sizeof *randomConsumer, PROT_READ | PROT_WRITE,
+                     MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  srand(time(NULL));
+  *randomConsumer = rand() % 4;
 
-  if (i != 0){ //Productor
-    while (1){
-      if (*currentIndex < size){
-        buffer[*currentIndex] = 1;
-        *currentIndex+= 1;
-        printf("Produced an item in position %d\n",*currentIndex );
-      }else{
-        sleep(1);
-      }
-    }
-
-  }else{ //Consumidor
-    while (1){
-      if (*currentIndex == 0){
-        sleep(1);
-      }else{
-        buffer[*currentIndex] = 0;
-        *currentIndex-= 1;
-        printf("Consumed an item in position %d\n",*currentIndex );
-      }
-    }
-
+  parentID = getpid();
+  producers();
+  consumers();
+  while (1){
+    //Parent that will do nothing
   }
-
-
-
   return 1;
 }
 
-void itemIsReady(int signum){
-  printf("We got an item\n" );
+//Routine that will create and handle the producers
+void producers(){
+  int producers[10];
+  int numberOfProducers;
+  for (numberOfProducers = 0; numberOfProducers < 10; numberOfProducers++){
+    producers[numberOfProducers] = fork();
+    if (producers[numberOfProducers]) continue;
+    else if(producers[numberOfProducers] == 0) break;
+    else{
+      printf("Fork error\n" );
+    }
+  }
+  if (getpid() != parentID){
+    while(1){ //Infinite loop that will produce all the time unless the buffer is full
+      if (*currentIndex == 7){
+        //The buffer is full
+        sleep(3);
+      }else{
+        *randomProducer = rand() % 4;
+        if ((parentID + *randomProducer) == getpid()){
+          printf("Producer %d is producing an item\n", *randomProducer );
+          *currentIndex = *currentIndex + 1;
+          sleep(5);
+        }else{
+          sleep(3);
+        }
+      }
+    }
+  }
+}
 
+//Routine that will create and handle the consumers
+void consumers(){
+  int consumers[10]; //number of consumers
+  int numberOfConsumers;
+  for (numberOfConsumers = 0; numberOfConsumers < 10; numberOfConsumers++){
+    consumers[numberOfConsumers] = fork();
+    if (consumers[numberOfConsumers]) continue;
+    else if(consumers[numberOfConsumers] == 0) break;
+    else{
+      printf("Fork error\n" );
+    }
+  }
+
+  if (getpid() != parentID){
+    while(1){ //Infinite loop that will consume all the time unless the buffer is empty
+      if (*currentIndex == 0){
+        //Buffer is empty
+        sleep(3);
+      }else{
+        *randomConsumer = (rand() % 10)+10;
+        if ((parentID + *randomConsumer) == getpid()){
+          printf("Consumer %d is consuming an item\n", *randomConsumer-10 );
+          *currentIndex = *currentIndex - 1;
+          sleep(5);
+        }else{
+          sleep(3);
+        }
+      }
+
+    }
+  }
 }
