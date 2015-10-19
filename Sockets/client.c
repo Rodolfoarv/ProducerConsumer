@@ -15,8 +15,8 @@
 int main(){
   int i, n,sock;
   struct sockaddr_in addr_send;
-  char *server_ip ="192.168.0.100";
-  unsigned short server_port = 61030;
+  char *server_ip ="10.48.126.237";
+  unsigned short server_port = 64000;
   char buffer[256];
 
   //Consumer variables
@@ -69,12 +69,12 @@ int main(){
         exit(1);
       }
       *currentIndex = *currentIndex +1;
-      printf("Here is the message: %s\n",buffer);
+      printf("An item has been produced, we're ready to consume\n" );
     }else{
       if ((parentID +*random) == getpid()){
 
         if (*currentIndex == 0){
-          printf("Index is full\n");
+          printf("The buffer isn't ready yet\n");
           sleep(5);
         }else{
           printf("************** Consumer %d is consuming an item **************** \n", *random);
@@ -99,17 +99,3 @@ int main(){
   return 0;
 
 }
-
-
-          /* Now read server response */
-          /*
-          bzero(buffer,256);
-          n = read(sock, buffer, 255);
-
-          if (n < 0)
-          {
-             perror("ERROR reading from socket");
-             exit(1);
-          }
-          printf("%s\n",buffer);
-          sleep (6);*/

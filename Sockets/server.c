@@ -13,7 +13,7 @@ int main(){
   int i,n, sock, sock_recv, clientLen;
   struct sockaddr_in my_addr;
   struct sockaddr_in recv_addr;
-  unsigned short listen_port = 61030;
+  unsigned short listen_port = 64000;
   char buffer[256];
 
   //Producer variables
@@ -80,7 +80,7 @@ int main(){
           perror("ERROR reading from socket");
           exit(1);
         }
-        printf("Here is the message: %s\n",buffer);
+        printf("Consuming an item....... look at the other terminal\n");
         bufferArray[*currentIndex] = 0;
         *currentIndex = *currentIndex -1;
 
@@ -92,7 +92,6 @@ int main(){
           //produce
           if (*currentIndex == 10){
             printf("The buffer is full, sleeping process %d \n", getpid() );
-            //n = write(sock_recv,"produce",7);
             sleep(2);
           }else{
             printf("************** Producer %d is producing an item **************** \n", *random);
@@ -102,7 +101,6 @@ int main(){
             sleep(6); //give the opportunity for another process to get into the production section
           }
         }else{
-          //printf("Sleeping producer with ID %d\n", getpid());
           sleep(1);
         }
       }

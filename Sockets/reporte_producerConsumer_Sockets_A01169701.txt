@@ -1,0 +1,115 @@
+= Problema del productor-consumidor o Bounded Buffer con Sockets
+:author:    Rodolfo Andrés Ramírez Valenzuela (A01169701)
+:email:     rodolfo@ramirezvalenzuela.com
+:encoding:  utf-8
+:revdate:   20 Oct, 2015.
+:numbered:
+
+Este reporte de laboratorio fue elaborado para el curso de _Programación Avanzada_
+en el Tecnológico de Monterrey, Campus Estado de
+México.
+
+== Introducción
+
+El problema del productor-consumidor es un ejemplo clásico de problema de sincronización de multi-procesos.
+El programa describe dos procesos, productor y consumidor, ambos comparten un buffer de tamaño finito.
+La tarea del productor es generar un producto, almacenarlo y comenzar nuevamente;
+mientras que el consumidor toma (simultáneamente) productos uno a uno. El problema
+consiste en que el productor no añada más productos que la capacidad del buffer y
+que el consumidor no intente tomar un producto si el buffer está vacío.
+
+Dentro de este reporte, se muestra la implementación del problema productor-consumidor
+por medio de TCP utilizando la conexión entre servidor y cliente. El servidor será el administrador
+de los productores, mientras que el cliente será el administrador de los consumidores, dentro de los mismos
+ellos comunicarán un mensaje *produce* o *consume* respectivamente para modificar el buffer asociado.
+
+== Procedimiento
+
+A continuación se muestra la implementación de dicho algoritmo y se explican las diferentes variables
+que fueron utilizadas, además de su uso.
+
+=== Servidor
+
+[source,c]
+--------------------------------------------------------------------------------
+include::server.c[]
+--------------------------------------------------------------------------------
+
+==== Variables
+
+*n:* Variable que será utilizada en la fase de binding, listening y creación del socket con la finalidad
+de verificar si existe algun error.
+
+*sock:* Socket, conexión con el cliente.
+
+*my_addr:* Variable que guardará la dirección del servidor.
+
+*recv_addr:* Variable que guardará la dirección del cliente.
+
+*listen_port:* Puerto donde se realizará la comunicación entre el cliente y el servidor.
+
+*random:* Variable de tipo random que será utilizada para distribuir el trabajo
+entre los diferentes productores.
+
+*parentID:* Variable que será utilizada con la finalidad de poder diferenciar el padre y los productores.
+
+*bufferArray:* Array que administrará los recursos dentro del buffer, esto con la finalidad de mostrar
+un 1 o 0 dependiendo de si existe un elemento o no dentro del buffer.
+
+*currentIndex:* Variable que será utilizada con la finalidad de tener la posición
+del elemento que se desea consumir en ese momento. Es importante denotar que dentro de este programa
+se utilizó mmap, con la finalidad de utilizar memoria compartida entre los hijos y el padre, esto con la finalidad
+de comunicar el valor de dicha variable en todo momento.
+
+=== Cliente
+
+[source,c]
+--------------------------------------------------------------------------------
+include::client.c[]
+--------------------------------------------------------------------------------
+
+==== Variables
+
+*n:* Variable que será utilizada en la fase de binding, listening y creación del socket con la finalidad
+de verificar si existe algun error.
+
+*sock:* Socket, conexión con el servidor.
+
+*addr_send:* Variable que guardará la dirección del servidor.
+
+*server_ip:* Variable que indica la dirección IP del servidor.
+
+NOTE: Comando ifconfig
+Debemos de ejecutar el comando ifconfig con la finalidad de modificar el server_ip
+para que el programa se ejecute correctamente.
+
+*listen_port:* Puerto donde se escucharán las peticiones por parte del servidor.
+
+*random:* Variable de tipo random que será utilizada para distribuir el trabajo
+entre los diferentes consumidores.
+
+*parentID:* Variable que será utilizada con la finalidad de poder diferenciar el padre y los productores.
+
+*currentIndex:* Variable que será utilizada con la finalidad de tener la posición
+del elemento que se desea consumir en ese momento. Es importante denotar que dentro de este programa
+se utilizó mmap, con la finalidad de utilizar memoria compartida entre los hijos y el padre, esto con la finalidad
+de comunicar el valor de dicha variable en todo momento.
+
+== Pruebas
+A continuación se muestra la prueba ejecutada desde la terminal. Para poder correr el programa
+se debe de utilizar los siguientes comandos:
+
+* *gcc server.c -o server*
+* *./server*
+* *gcc client.c -o client*
+* *./client*
+
+image:./producer_consumer2.jpg[]
+
+== Conclusión
+
+Dentro de esta práctica se aplicaron los conceptos de comunicación entre procesos
+además de memoria compartida, con la finalidad de mostrar el problema de productor-consumidor,
+es importante denotar que la aplicación de forks() no es ideal para dicho problema ya que
+pueden surgir diferentes problemas como es el Mutual Exclusion entre otros, por lo cual hay que tener
+gran cuidado sobre ello. Para una futura implementación es muy recomendado el uso de semáforos.
